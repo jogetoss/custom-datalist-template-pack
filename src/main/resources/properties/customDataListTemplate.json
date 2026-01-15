@@ -1,0 +1,335 @@
+[
+  {
+    "title": "@@org.joget.marketplace.customdatalist.list.config@@",
+    "properties": [
+      {
+        "name": "templateType",
+        "label": "@@org.joget.marketplace.customdatalist.list.templateType@@",
+        "type": "imageradio",
+        "value": "template1",
+        "mode": "inline",
+        "size": "width:900px;height:370px",
+        "options": [
+          {
+            "value": "template1",
+            "label": "@@org.joget.marketplace.customdatalist.list.template1@@",
+            "image": "[CONTEXT_PATH]/plugin/org.joget.marketplace.CustomDataListTemplate/templateImages/pricing_card_template_ss.png?v=8.0.1"
+          },
+          {
+            "value": "template2",
+            "label": "@@org.joget.marketplace.customdatalist.list.template2@@",
+            "image": "[CONTEXT_PATH]/plugin/org.joget.marketplace.CustomDataListTemplate/templateImages/multi_columns_template_ss.png?v=8.0.1"
+          },
+          {
+            "value": "template3",
+            "label": "@@org.joget.marketplace.customdatalist.list.template3@@",
+            "image": "[CONTEXT_PATH]/plugin/org.joget.marketplace.CustomDataListTemplate/templateImages/profile_grid_template_ss.png?v=8.0.1"
+          },
+          {
+            "value": "template4",
+            "label": "@@org.joget.marketplace.customdatalist.list.template4@@",
+            "image": "[CONTEXT_PATH]/plugin/org.joget.marketplace.CustomDataListTemplate/templateImages/ribbon_row_template_ss.png?v=8.0.1"
+          },
+          {
+            "value": "template5",
+            "label": "@@org.joget.marketplace.customdatalist.list.template5@@",
+            "image": "[CONTEXT_PATH]/plugin/org.joget.marketplace.CustomDataListTemplate/templateImages/expand_row_template_ss.png?v=8.0.1"
+          }
+        ],
+        "required": "true",
+        "description": "@@org.joget.marketplace.customdatalist.list.templateType.desc@@"
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.marketplace.customdatalist.pricingcard.config@@",
+    "control_field": "templateType",
+    "control_value": "template1",
+    "properties": [
+      {
+        "name": "actionsStyle",
+        "label": "@@org.joget.marketplace.customdatalist.pricingcard.actionsStyle@@",
+        "type": "selectbox",
+        "options": [
+          {
+            "value": "",
+            "label": "@@org.joget.marketplace.customdatalist.pricingcard.actionsStyle.dd@@"
+          },
+          {
+            "value": "normalActions",
+            "label": "@@org.joget.marketplace.customdatalist.pricingcard.actionsStyle.nb@@"
+          },
+          {
+            "value": "bottomActions",
+            "label": "@@org.joget.marketplace.customdatalist.pricingcard.actionsStyle.bottom@@"
+          },
+          {
+            "value": "swipeActions",
+            "label": "@@org.joget.marketplace.customdatalist.pricingcard.actionsStyle.swipe@@"
+          }
+        ]
+      },
+      {
+        "name": "cardsPerRow",
+        "label": "@@org.joget.marketplace.customdatalist.pricingcard.cardsPerRow@@",
+        "type": "selectbox",
+        "options": [
+          {
+            "value": "1",
+            "label": "1 Card"
+          },
+          {
+            "value": "2",
+            "label": "2 Cards"
+          },
+          {
+            "value": "3",
+            "label": "3 Cards"
+          },
+          {
+            "value": "4",
+            "label": "4 Cards"
+          },
+          {
+            "value": "5",
+            "label": "5 Cards"
+          }
+        ],
+        "value": "4"
+      },
+      {
+        "name": "pricingCardConditionGrid",
+        "label": "@@org.joget.marketplace.customdatalist.pricingcard.conditionGrid@@",
+        "type": "repeater",
+        "fields": [
+          {
+            "name": "gridColumnId",
+            "label": "@@org.joget.marketplace.customdatalist.pricingcard.conditionColumnId@@",
+            "type": "selectbox",
+            "options_callback": "DatalistBuilder.getColumnOptions",
+            "description": "@@org.joget.marketplace.customdatalist.pricingcard.conditionColumnId.desc@@"
+          },
+          {
+            "name": "gridValue",
+            "label": "@@org.joget.marketplace.customdatalist.pricingcard.conditionValue@@",
+            "type": "textfield",
+            "description": "@@org.joget.marketplace.customdatalist.pricingcard.conditionValue.desc@@"
+          },
+          {
+            "name": "gridColor",
+            "label": "@@org.joget.marketplace.customdatalist.pricingcard.cardColor@@",
+            "type": "color",
+            "required": "false",
+            "value": "#dbeafe",
+            "description": "@@org.joget.marketplace.customdatalist.pricingcard.cardColor.desc@@"
+          }
+        ],
+        "description": "@@org.joget.marketplace.customdatalist.pricingcard.conditionGrid.desc@@"
+      },
+      {
+        "name": "pricingCardAllOtherCardsColor",
+        "label": "@@org.joget.marketplace.customdatalist.pricingcard.allOtherCardsColor@@",
+        "type": "color",
+        "required": "false",
+        "value": "#dbeafe",
+        "description": "@@org.joget.marketplace.customdatalist.pricingcard.allOtherCardsColor.desc@@"
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.marketplace.customdatalist.multicolumns.config@@",
+    "control_field": "templateType",
+    "control_value": "template2",
+    "properties": [
+      {
+        "name": "actionsStyle",
+        "label": "@@org.joget.marketplace.customdatalist.multicolumns.actionsStyle@@",
+        "type": "selectbox",
+        "options": [
+          {
+            "value": "",
+            "label": "@@org.joget.marketplace.customdatalist.multicolumns.actionsStyle.dd@@"
+          },
+          {
+            "value": "normalActions",
+            "label": "@@org.joget.marketplace.customdatalist.multicolumns.actionsStyle.nb@@"
+          },
+          {
+            "value": "bottomActions",
+            "label": "@@org.joget.marketplace.customdatalist.multicolumns.actionsStyle.bottom@@"
+          },
+          {
+            "value": "swipeActions",
+            "label": "@@org.joget.marketplace.customdatalist.multicolumns.actionsStyle.swipe@@"
+          }
+        ]
+      },
+      {
+        "name": "separator",
+        "label": "@@org.joget.marketplace.customdatalist.multicolumns.separator@@",
+        "type": "textfield",
+        "value": "-"
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.marketplace.customdatalist.profilegrid.config@@",
+    "control_field": "templateType",
+    "control_value": "template3",
+    "properties": [
+      {
+        "name": "actionsStyle",
+        "label": "@@org.joget.marketplace.customdatalist.profilegrid.actionsStyle@@",
+        "type": "selectbox",
+        "options": [
+          {
+            "value": "",
+            "label": "@@org.joget.marketplace.customdatalist.profilegrid.actionsStyle.dd@@"
+          },
+          {
+            "value": "normalActions",
+            "label": "@@org.joget.marketplace.customdatalist.profilegrid.actionsStyle.nb@@"
+          },
+          {
+            "value": "bottomActions",
+            "label": "@@org.joget.marketplace.customdatalist.profilegrid.actionsStyle.bottom@@"
+          },
+          {
+            "value": "swipeActions",
+            "label": "@@org.joget.marketplace.customdatalist.profilegrid.actionsStyle.swipe@@"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.marketplace.customdatalist.ribbonrow.config@@",
+    "control_field": "templateType",
+    "control_value": "template4",
+    "properties": [
+      {
+        "name": "actionsStyle",
+        "label": "@@org.joget.marketplace.customdatalist.ribbonrow.actionsStyle@@",
+        "type": "selectbox",
+        "options": [
+          {
+            "value": "",
+            "label": "@@org.joget.marketplace.customdatalist.ribbonrow.actionsStyle.dd@@"
+          },
+          {
+            "value": "normalActions",
+            "label": "@@org.joget.marketplace.customdatalist.ribbonrow.actionsStyle.nb@@"
+          },
+          {
+            "value": "bottomActions",
+            "label": "@@org.joget.marketplace.customdatalist.ribbonrow.actionsStyle.bottom@@"
+          },
+          {
+            "value": "swipeActions",
+            "label": "@@org.joget.marketplace.customdatalist.ribbonrow.actionsStyle.swipe@@"
+          }
+        ]
+      },
+      {
+        "name": "separator",
+        "label": "@@org.joget.marketplace.customdatalist.ribbonrow.separator@@",
+        "type": "textfield",
+        "value": "-"
+      },
+      {
+        "name": "ribbonRowConditionGrid",
+        "label": "@@org.joget.marketplace.customdatalist.ribbonrow.conditionGrid@@",
+        "type": "repeater",
+        "fields": [
+          {
+            "name": "gridColumnId",
+            "label": "@@org.joget.marketplace.customdatalist.ribbonrow.conditionColumnId@@",
+            "type": "selectbox",
+            "options_callback": "DatalistBuilder.getColumnOptions",
+            "description": "@@org.joget.marketplace.customdatalist.ribbonrow.conditionColumnId.desc@@"
+          },
+          {
+            "name": "gridValue",
+            "label": "@@org.joget.marketplace.customdatalist.ribbonrow.conditionValue@@",
+            "type": "textfield",
+            "description": "@@org.joget.marketplace.customdatalist.ribbonrow.conditionValue.desc@@"
+          },
+          {
+            "name": "gridColor",
+            "label": "@@org.joget.marketplace.customdatalist.ribbonrow.cardColor@@",
+            "type": "color",
+            "required": "false",
+            "value": "#dbeafe",
+            "description": "@@org.joget.marketplace.customdatalist.ribbonrow.cardColor.desc@@"
+          }
+        ],
+        "description": "@@org.joget.marketplace.customdatalist.ribbonrow.conditionGrid.desc@@"
+      },
+      {
+        "name": "ribbonRowAllOtherCardsColor",
+        "label": "@@org.joget.marketplace.customdatalist.ribbonrow.allOtherCardsColor@@",
+        "type": "color",
+        "required": "false",
+        "value": "#dbeafe",
+        "description": "@@org.joget.marketplace.customdatalist.ribbonrow.allOtherCardsColor.desc@@"
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.marketplace.customdatalist.expandrow.config@@",
+    "control_field": "templateType",
+    "control_value": "template5",
+    "properties": [
+      {
+        "label": "@@org.joget.marketplace.customdatalist.expandrow.expandIcon@@",
+        "name": "expandIcon",
+        "type": "textfield",
+        "description": "@@org.joget.marketplace.customdatalist.expandrow.expandIcon.desc@@",
+        "value": "fas fa-chevron-right"
+      },
+      {
+        "label": "@@org.joget.marketplace.customdatalist.expandrow.collapseIcon@@",
+        "name": "collapseIcon",
+        "type": "textfield",
+        "description": "@@org.joget.marketplace.customdatalist.expandrow.collapseIcon.desc@@",
+        "value": "fas fa-chevron-down"
+      },
+      {
+        "label": "@@org.joget.marketplace.customdatalist.expandrow.layout@@",
+        "name": "layout",
+        "type": "selectbox",
+        "description": "@@org.joget.marketplace.customdatalist.expandrow.layout.desc@@",
+        "value": "horizontal",
+        "options": [
+          {
+            "value": "horizontal",
+            "label": "@@org.joget.marketplace.customdatalist.expandrow.layout.horizontal@@"
+          },
+          {
+            "value": "vertical",
+            "label": "@@org.joget.marketplace.customdatalist.expandrow.layout.vertical@@"
+          }
+        ]
+      },
+      {
+        "label": "@@org.joget.marketplace.customdatalist.expandrow.expandableFieldsCount@@",
+        "name": "expandableFieldsCount",
+        "type": "selectbox",
+        "description": "@@org.joget.marketplace.customdatalist.expandrow.expandableFieldsCount.desc@@",
+        "value": "5",
+        "options": [
+          { "value": "1", "label": "1" },
+          { "value": "2", "label": "2" },
+          { "value": "3", "label": "3" },
+          { "value": "4", "label": "4" },
+          { "value": "5", "label": "5" },
+          { "value": "6", "label": "6" },
+          { "value": "7", "label": "7" },
+          { "value": "8", "label": "8" },
+          { "value": "9", "label": "9" },
+          { "value": "10", "label": "10" }
+        ]
+      }
+    ]
+  }
+]
