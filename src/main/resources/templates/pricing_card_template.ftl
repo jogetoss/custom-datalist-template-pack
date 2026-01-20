@@ -447,7 +447,6 @@
     (function() {
         var listDiv = document.getElementById("dataList_{{list.id}}");
         if (listDiv === null) {
-            console.log('[PricingCard] List div not found');
             return;
         }
 
@@ -456,24 +455,6 @@
         <#assign conditionGridRaw = element.properties.pricingCardConditionGrid!"" />
         <#assign otherColorProp = element.properties.pricingCardAllOtherCardsColor!allOtherCardsColor!"#dbeafe" />
 
-        // Debug: Output raw property to see what Joget is actually storing
-        console.log('[PricingCard] ===== RAW REPEATER DATA DEBUG =====');
-        console.log('[PricingCard] conditionGridRaw type check - is_string:', ${conditionGridRaw?is_string?c});
-        console.log('[PricingCard] conditionGridRaw type check - is_sequence:', ${conditionGridRaw?is_sequence?c});
-        <#if conditionGridRaw?is_string>
-        console.log('[PricingCard] Raw string value:', '${conditionGridRaw?js_string}');
-        <#elseif conditionGridRaw?is_sequence>
-        console.log('[PricingCard] Sequence size: ${conditionGridRaw?size}');
-        <#list conditionGridRaw as condition>
-        console.log('[PricingCard] --- Row ${condition_index + 1} ---');
-        <#list condition?keys as key>
-        console.log('[PricingCard]   "${key}": "${(condition[key]!"")?js_string}"');
-        </#list>
-        </#list>
-        <#else>
-        console.log('[PricingCard] Unknown type or empty');
-        </#if>
-        console.log('[PricingCard] ===== END DEBUG =====');
 
         var conditions = [];
         
@@ -500,13 +481,11 @@
                     });
                 }
             } catch (e) {
-                console.log('[PricingCard] Error parsing grid JSON:', e);
+                // Error parsing grid JSON - silently continue with empty conditions
             }
         </#if>
 
         var defaultColor = '${otherColorProp?js_string}' || '#dbeafe';
-        console.log('[PricingCard] Final conditions array:', JSON.stringify(conditions, null, 2));
-        console.log('[PricingCard] Default Color:', defaultColor);
 
         // Helper function to extract column value from card
         function extractColumnValue(card, columnId) {
@@ -584,12 +563,10 @@
                 }
             }
             
-            console.log('[PricingCard] Could not find column value for:', columnId);
             return '';
         }
 
         var cards = listDiv.querySelectorAll('.pricing-card');
-        console.log('[PricingCard] Found', cards.length, 'cards');
 
         cards.forEach(function(card, index) {
             var matched = false;
@@ -609,11 +586,8 @@
                 // Extract value from card for this condition's column
                 var cardValue = extractColumnValue(card, conditionColumnId);
 
-                console.log('[PricingCard] Card', index + 1, '- Checking condition', i + 1, '- Column:', conditionColumnId, '- Card Value:', cardValue, '- Condition Value:', conditionValue);
-
                 // Exact, case-sensitive match
                 if (cardValue === conditionValue) {
-                    console.log('[PricingCard] Card', index + 1, '- Matched condition', i + 1, '- Applying color:', cardColor);
                     matched = true;
                     matchedColor = cardColor || defaultColor;
                     break; // Use first match
@@ -627,8 +601,6 @@
                 card.style.background = defaultColor;
             }
         });
-
-        console.log('[PricingCard] Conditional coloring complete');
     })();
 </script>
 
