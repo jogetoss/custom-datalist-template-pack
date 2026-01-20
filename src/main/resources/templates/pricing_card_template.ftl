@@ -26,50 +26,6 @@
         backdrop-filter: blur(10px);
     }
 
-    /* Decorative top accent border */
-    #dataList_{{list.id}} .pricing-card::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
-        opacity: 0.6;
-        transition: opacity 0.3s;
-    }
-
-    #dataList_{{list.id}} .pricing-card:hover::after {
-        opacity: 1;
-    }
-
-    /* Hover effects */
-    #dataList_{{list.id}} .pricing-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 2px solid transparent;
-        background-image: linear-gradient(#ffffff, #ffffff),
-                         linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
-        background-origin: border-box;
-        background-clip: padding-box, border-box;
-    }
-
-    /* Add a subtle shine effect on hover */
-    #dataList_{{list.id}} .pricing-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        transition: left 0.5s;
-    }
-
-    #dataList_{{list.id}} .pricing-card:hover::before {
-        left: 100%;
-    }
-
     <#assign cardsPerRow = (element.properties.cardsPerRow!cardsPerRow!"4")?number>
     <#if cardsPerRow == 1>
         #dataList_{{list.id}} .pricing-card {
@@ -110,9 +66,6 @@
         transition: opacity 0.3s;
     }
 
-    #dataList_{{list.id}} .pricing-card:hover .pricing-plan-label {
-        opacity: 1;
-    }
 
     #dataList_{{list.id}} .pricing-plan-name {
         font-size: 24px;
@@ -124,9 +77,6 @@
         transition: color 0.3s;
     }
 
-    #dataList_{{list.id}} .pricing-card:hover .pricing-plan-name {
-        color: #1e40af;
-    }
 
     #dataList_{{list.id}} .pricing-plan-subtitle {
         font-size: 14px;
@@ -160,9 +110,6 @@
         transition: transform 0.3s;
     }
 
-    #dataList_{{list.id}} .pricing-card:hover .pricing-price-amount {
-        transform: scale(1.05);
-    }
 
     #dataList_{{list.id}} .pricing-price-period {
         font-size: 14px;
@@ -182,10 +129,6 @@
         transition: all 0.3s;
     }
 
-    #dataList_{{list.id}} .pricing-card:hover .pricing-price-note {
-        background: rgba(16, 185, 129, 0.15);
-        transform: translateY(-2px);
-    }
 
     /* Selector / duration dropdown */
     #dataList_{{list.id}} .pricing-duration {
@@ -565,8 +508,6 @@
         console.log('[PricingCard] Final conditions array:', JSON.stringify(conditions, null, 2));
         console.log('[PricingCard] Default Color:', defaultColor);
 
-        var defaultGradient = 'linear-gradient(135deg, ' + defaultColor + ' 0%, #ffffff 100%)';
-
         // Helper function to extract column value from card
         function extractColumnValue(card, columnId) {
             if (!columnId || !columnId.trim()) {
@@ -681,10 +622,9 @@
 
             // Apply the matched color or default
             if (matched && matchedColor) {
-                var gradient = 'linear-gradient(135deg, ' + matchedColor + ' 0%, #ffffff 100%)';
-                card.style.background = gradient;
+                card.style.background = matchedColor;
             } else {
-                card.style.background = defaultGradient;
+                card.style.background = defaultColor;
             }
         });
 
