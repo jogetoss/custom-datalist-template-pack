@@ -74,6 +74,8 @@ public class CustomDataListTemplate extends DataListTemplate {
             templateFileName = "ribbon_row_template.ftl";
         } else if ("template5".equals(templateType)) {
             templateFileName = "expand_row_template.ftl";
+        } else if ("template6".equals(templateType)) {
+            templateFileName = "sticky_actions_protected_rows_template.ftl";
         } else {
             // Default mapping for other templates
             templateFileName = templateType + ".ftl";
@@ -171,7 +173,35 @@ public class CustomDataListTemplate extends DataListTemplate {
                 templatePath = "/templates/" + templateFileName;
             }
         }
-        
+        // Template 6: simple sticky-actions table (has its own design template)
+        else if ("template6".equals(templateType)) {
+            String disableSelectionColumnId = getPropertyString("disableSelectionColumnId");
+            String disableSelectionValue = getPropertyString("disableSelectionValue");
+            data.put("disableSelectionColumnId", disableSelectionColumnId != null ? disableSelectionColumnId : "");
+            data.put("disableSelectionValue", disableSelectionValue != null ? disableSelectionValue : "");
+
+            // Check if we're in design view for template 6
+            boolean isDesignView = false;
+            try {
+                java.lang.reflect.Method getRequestMethod = WorkflowUtil.class.getMethod("getHttpServletRequest");
+                Object request = getRequestMethod.invoke(null);
+                if (request != null) {
+                    java.lang.reflect.Method getRequestURIMethod = request.getClass().getMethod("getRequestURI");
+                    Object uriObj = getRequestURIMethod.invoke(request);
+                    if (uriObj != null && uriObj.toString().endsWith("/getRenderingTemplate")) {
+                        isDesignView = true;
+                    }
+                }
+            } catch (Exception e) {
+                isDesignView = false;
+            }
+
+            if (isDesignView) {
+                templateFileName = "sticky_actions_protected_rows_template_design.ftl";
+                templatePath = "/templates/" + templateFileName;
+            }
+        }
+
         // Load and return the selected template
         return getTemplate(data, templatePath, null);
     }

@@ -34,6 +34,11 @@
             "value": "template5",
             "label": "@@org.joget.marketplace.customdatalist.list.template5@@",
             "image": "[CONTEXT_PATH]/plugin/org.joget.marketplace.CustomDataListTemplate/templateImages/expand_row_template_ss.png?v=8.0.1"
+          },
+          {
+            "value": "template6",
+            "label": "@@org.joget.marketplace.customdatalist.list.template6@@",
+            "image": "[CONTEXT_PATH]/plugin/org.joget.marketplace.CustomDataListTemplate/templateImages/sticky_actions_protected_rows_ss.png?v=8.0.1"
           }
         ],
         "required": "true",
@@ -329,6 +334,26 @@
           { "value": "9", "label": "9" },
           { "value": "10", "label": "10" }
         ]
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.marketplace.customdatalist.template6.config@@",
+    "control_field": "templateType",
+    "control_value": "template6",
+    "properties": [
+      {
+        "name": "disableSelectionColumnId",
+        "label": "@@org.joget.marketplace.customdatalist.template6.disableSelectionColumnId@@",
+        "type": "selectbox",
+        "options_callback": "DatalistBuilder.getColumnOptions",
+        "description": "@@org.joget.marketplace.customdatalist.template6.disableSelectionColumnId.desc@@"
+      },
+      {
+        "name": "disableSelectionValue",
+        "label": "@@org.joget.marketplace.customdatalist.template6.disableSelectionValue@@",
+        "type": "textfield",
+        "description": "@@org.joget.marketplace.customdatalist.template6.disableSelectionValue.desc@@"
       }
     ]
   }
