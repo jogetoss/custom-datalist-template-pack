@@ -149,6 +149,8 @@ body.rtl .table > tbody > tr > td:first-child {
             if (cb) {
                 cb.disabled = true;
                 cb.setAttribute("title", "Selection disabled for this row");
+                // Hide the selection checkbox entirely for protected rows
+                cb.style.display = "none";
             }
         }
     }
