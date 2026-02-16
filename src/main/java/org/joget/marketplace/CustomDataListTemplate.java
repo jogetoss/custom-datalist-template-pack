@@ -173,12 +173,9 @@ public class CustomDataListTemplate extends DataListTemplate {
                 templatePath = "/templates/" + templateFileName;
             }
         }
-        // Template 6: simple sticky-actions table (has its own design template)
+        // Template 6: Sticky Actions & Protected Rows (has its own design template)
         else if ("template6".equals(templateType)) {
-            String disableSelectionColumnId = getPropertyString("disableSelectionColumnId");
-            String disableSelectionValue = getPropertyString("disableSelectionValue");
-            data.put("disableSelectionColumnId", disableSelectionColumnId != null ? disableSelectionColumnId : "");
-            data.put("disableSelectionValue", disableSelectionValue != null ? disableSelectionValue : "");
+            // Repeater (protectedRowsConditionGrid) is read by template via element.properties
 
             // Check if we're in design view for template 6
             boolean isDesignView = false;

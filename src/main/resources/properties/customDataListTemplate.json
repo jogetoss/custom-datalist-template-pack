@@ -343,17 +343,25 @@
     "control_value": "template6",
     "properties": [
       {
-        "name": "disableSelectionColumnId",
-        "label": "@@org.joget.marketplace.customdatalist.template6.disableSelectionColumnId@@",
-        "type": "selectbox",
-        "options_callback": "DatalistBuilder.getColumnOptions",
-        "description": "@@org.joget.marketplace.customdatalist.template6.disableSelectionColumnId.desc@@"
-      },
-      {
-        "name": "disableSelectionValue",
-        "label": "@@org.joget.marketplace.customdatalist.template6.disableSelectionValue@@",
-        "type": "textfield",
-        "description": "@@org.joget.marketplace.customdatalist.template6.disableSelectionValue.desc@@"
+        "name": "protectedRowsConditionGrid",
+        "label": "@@org.joget.marketplace.customdatalist.template6.protectedRowsConditionGrid@@",
+        "type": "repeater",
+        "fields": [
+          {
+            "name": "gridColumnId",
+            "label": "@@org.joget.marketplace.customdatalist.template6.conditionColumnId@@",
+            "type": "selectbox",
+            "options_callback": "DatalistBuilder.getColumnOptions",
+            "description": "@@org.joget.marketplace.customdatalist.template6.conditionColumnId.desc@@"
+          },
+          {
+            "name": "gridValue",
+            "label": "@@org.joget.marketplace.customdatalist.template6.conditionValue@@",
+            "type": "textfield",
+            "description": "@@org.joget.marketplace.customdatalist.template6.conditionValue.desc@@"
+          }
+        ],
+        "description": "@@org.joget.marketplace.customdatalist.template6.protectedRowsConditionGrid.desc@@"
       }
     ]
   }

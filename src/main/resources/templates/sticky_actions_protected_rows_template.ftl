@@ -1,5 +1,5 @@
 <div class="table-responsive">
-    <table class="table table-hover" data-disable-selection-column="${(disableSelectionColumnId!'')?html}" data-disable-selection-value="${(disableSelectionValue!'')?html}">
+    <table class="table table-hover">
         <thead>
             <tr>
                 {{selector}}
@@ -97,13 +97,33 @@ body.rtl .table > tbody > tr > td:first-child {
     var theadCheckbox = table.querySelector("thead .sapr-select-all-header input[type='checkbox']");
     var rowCheckboxes = function() { return table.querySelectorAll("tbody tr td:first-child input[type='checkbox']"); };
 
-    // Disable selection for rows where configured column value matches (Protected Rows)
-    var columnId = (table.dataset.disableSelectionColumn || "").trim();
-    var matchValue = (table.dataset.disableSelectionValue || "").trim();
-    if (columnId && matchValue !== undefined) {
-        var rows = table.querySelectorAll("tbody tr");
-        for (var r = 0; r < rows.length; r++) {
-            var row = rows[r];
+    // Protected Rows: conditions from repeater (element.properties.protectedRowsConditionGrid)
+    var conditions = [];
+    <#assign conditionGridRaw = element.properties.protectedRowsConditionGrid!"" />
+    <#if conditionGridRaw?is_sequence>
+        <#list conditionGridRaw as condition>
+    conditions.push({ columnId: '${(condition.gridColumnId!"")?js_string}', value: '${(condition.gridValue!"")?js_string}' });
+        </#list>
+    <#elseif conditionGridRaw?is_string && conditionGridRaw != "" && conditionGridRaw != "[]">
+    try {
+        var parsed = JSON.parse('${conditionGridRaw?js_string}');
+        if (Array.isArray(parsed)) {
+            conditions = parsed.map(function(cond) {
+                return { columnId: (cond.gridColumnId || cond.columnId || '').trim(), value: (cond.gridValue || cond.value || '').trim() };
+            });
+        }
+    } catch (e) {}
+    </#if>
+
+    // Disable selection for rows that match any condition (Protected Rows)
+    var rows = table.querySelectorAll("tbody tr");
+    for (var r = 0; r < rows.length; r++) {
+        var row = rows[r];
+        var matched = false;
+        for (var i = 0; i < conditions.length; i++) {
+            var columnId = conditions[i].columnId;
+            var matchValue = conditions[i].value;
+            if (!columnId || matchValue === undefined) continue;
             var cells = row.querySelectorAll("td");
             var cell = null;
             for (var c = 0; c < cells.length; c++) {
@@ -119,12 +139,16 @@ body.rtl .table > tbody > tr > td:first-child {
             if (cell) {
                 var cellText = (cell.textContent || cell.innerText || "").trim();
                 if (cellText === matchValue) {
-                    var cb = row.querySelector("td:first-child input[type='checkbox']");
-                    if (cb) {
-                        cb.disabled = true;
-                        cb.setAttribute("title", "Selection disabled for this row");
-                    }
+                    matched = true;
+                    break;
                 }
+            }
+        }
+        if (matched) {
+            var cb = row.querySelector("td:first-child input[type='checkbox']");
+            if (cb) {
+                cb.disabled = true;
+                cb.setAttribute("title", "Selection disabled for this row");
             }
         }
     }
