@@ -1,3 +1,10 @@
+<#assign _dl = element.datalist />
+<#assign _sortParam = _dl.getDataListEncodedParamName("s") />
+<#assign _orderParam = _dl.getDataListEncodedParamName("o") />
+<#assign _pageParam = _dl.getDataListEncodedParamName("p") />
+<#assign _curSort = (_dl.getDataListParamString("s"))!"" />
+<#assign _curOrder = (_dl.getDataListParamString("o"))!"" />
+<#assign _sortableIds = element.sortableColumnIds />
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
@@ -76,6 +83,18 @@ body.rtl .table > tbody > tr > td:first-child {
   display: none !important;
 }
 
+/* Sortable column headers */
+#dataList_{{list.id}} thead th.sortable {
+    cursor: pointer;
+    white-space: nowrap;
+}
+#dataList_{{list.id}} thead th.sortable a.sort-link {
+    color: inherit;
+    text-decoration: none;
+}
+#dataList_{{list.id}} thead th.sortable a.sort-link:hover {
+    text-decoration: underline;
+}
 /* Row Actions Spacing */
 .rowActions.d-flex > a {
     margin-right: 8px !important;
@@ -190,5 +209,50 @@ body.rtl .table > tbody > tr > td:first-child {
     });
 
     syncHeaderFromRows();
+
+    // Empty state row
+    var tbody = table.querySelector('tbody');
+    if (tbody && tbody.querySelectorAll('tr.data-row').length === 0) {
+        var headerCells = table.querySelectorAll('thead tr:first-child th');
+        var emptyTr = document.createElement('tr');
+        emptyTr.className = 'empty';
+        var emptyTd = document.createElement('td');
+        emptyTd.colSpan = headerCells.length;
+        emptyTd.textContent = 'Nothing found to display.';
+        emptyTr.appendChild(emptyTd);
+        tbody.appendChild(emptyTr);
+    }
+
+    // Sortable column headers
+    var sortParamName = '${_sortParam?js_string}';
+    var orderParamName = '${_orderParam?js_string}';
+    var pageParamName = '${_pageParam?js_string}';
+    var currentSortIdx = parseInt('${_curSort?js_string}') || 0;
+    var currentOrder = '${_curOrder?js_string}';
+    var ASC = '2', DESC = '1';
+    var sortableIds = [<#list _sortableIds as _id>'${_id?js_string}'<#sep>, </#list>];
+
+    listEl.querySelectorAll('thead th.column_header').forEach(function(th) {
+        // Extract column ID from the "header_{id}" CSS class added by applyStyles()
+        var headerMatch = th.className.match(/\bheader_(\S+)/);
+        if (!headerMatch) return;
+        if (sortableIds.indexOf(headerMatch[1]) === -1) return;
+
+        var sortIdx = th.cellIndex + 1; // 1-based; DataList handles checkbox offset internally
+        var isCurrentSort = (currentSortIdx === sortIdx);
+
+        var urlParams = new URLSearchParams(window.location.search);
+        urlParams.set(sortParamName, sortIdx);
+        urlParams.set(pageParamName, '1');
+        urlParams.set(orderParamName, isCurrentSort ? (currentOrder === DESC ? ASC : DESC) : ASC);
+
+        th.classList.add('sortable');
+        if (isCurrentSort) {
+            th.classList.add('sorted');
+            th.classList.add(currentOrder === DESC ? 'order1' : 'order2');
+        }
+        th.innerHTML = '<a href="?' + urlParams.toString() + '" class="sort-link">'
+            + th.innerHTML + '</a>';
+    });
 })();
 </script>
