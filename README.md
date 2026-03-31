@@ -1,6 +1,14 @@
 # Description
 
-This repository is meant to serve as a general template for how to set up new repositories in the JogetOSS organization. 
+Custom DataList Template Pack for Joget that adds multiple ready-made DataList layouts (card/grid/table styles) with configurable options, including expandable rows and protected row selection.
+
+Includes:
+- Pricing Card
+- Multi Columns
+- Profile Grid
+- Ribbon Row
+- Expand Row
+- Sticky Actions & Protected Rows
 
 # Getting Help
 
