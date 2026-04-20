@@ -18,7 +18,7 @@ public class CustomDataListTemplate extends DataListTemplate {
 
     @Override
     public String getVersion() {
-        return "8.0.0";
+        return "9.0.1";
     }
 
     @Override
