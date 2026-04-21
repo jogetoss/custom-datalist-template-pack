@@ -1,15 +1,53 @@
 package org.joget.marketplace;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.joget.apps.app.service.AppUtil;
+import org.joget.apps.datalist.model.DataListColumn;
 import org.joget.apps.datalist.model.DataListTemplate;
 import org.joget.workflow.util.WorkflowUtil;
 
 public class CustomDataListTemplate extends DataListTemplate {
     
     private final static String MESSAGE_PATH = "messages/CustomDataListTemplate";
+
+    /**
+     * ThreadLocal flag to break the recursion that occurs when FreeMarker calls
+     * getDatalist().getColumns(), which internally calls getTemplate() again.
+     * On the recursive call we return an empty list so the inner render completes
+     * (DataList only needs {{column}} markers from that inner render), and the
+     * outer call gets the real sortable column IDs.
+     */
+    private static final ThreadLocal<Boolean> COMPUTING_SORTABLE_COLUMNS = new ThreadLocal<>();
+
+    /**
+     * Returns the list of column IDs (e.g. "column_1") whose sortable flag is true.
+     * Safe to call from FreeMarker via {@code element.sortableColumnIds}.
+     */
+    public List<String> getSortableColumnIds() {
+        if (Boolean.TRUE.equals(COMPUTING_SORTABLE_COLUMNS.get())) {
+            return Collections.emptyList();
+        }
+        COMPUTING_SORTABLE_COLUMNS.set(true);
+        try {
+            DataListColumn[] columns = getDatalist().getColumns();
+            List<String> result = new ArrayList<>();
+            if (columns != null) {
+                for (DataListColumn col : columns) {
+                    if (col.isSortable()) {
+                        result.add(col.getPropertyString("id"));
+                    }
+                }
+            }
+            return result;
+        } finally {
+            COMPUTING_SORTABLE_COLUMNS.remove();
+        }
+    }
     
     @Override
     public String getName() {
