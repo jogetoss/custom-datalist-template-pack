@@ -326,17 +326,24 @@ body.rtl .table > tbody > tr > td:first-child {
     var ASC = '2', DESC = '1';
     var sortableIds = [<#list _sortableIds as _id>'${_id?js_string}'<#sep>, </#list>];
 
-    listEl.querySelectorAll('thead th.column_header').forEach(function(th) {
-        // Extract column ID from the "header_{id}" CSS class added by applyStyles()
-        var headerMatch = th.className.match(/\bheader_(\S+)/);
-        if (!headerMatch) return;
-        if (sortableIds.indexOf(headerMatch[1]) === -1) return;
+    // Build a 1-based sort index map using only actual datalist column headers (ignore selector/actions columns)
+    var headerCells = Array.prototype.slice.call(listEl.querySelectorAll('thead tr:first-child th'));
+    var columnHeaders = headerCells
+        .map(function(th) {
+            var m = (th.className || '').match(/\bheader_([^\s]+)/);
+            return m ? { th: th, id: m[1] } : null;
+        })
+        .filter(Boolean);
 
-        var sortIdx = th.cellIndex + 1; // 1-based; DataList handles checkbox offset internally
+    columnHeaders.forEach(function(item, idx) {
+        if (sortableIds.indexOf(item.id) === -1) return;
+
+        var th = item.th;
+        var sortIdx = idx + 1; // 1-based index among DataList columns only
         var isCurrentSort = (currentSortIdx === sortIdx);
 
         var urlParams = new URLSearchParams(window.location.search);
-        urlParams.set(sortParamName, sortIdx);
+        urlParams.set(sortParamName, String(sortIdx));
         urlParams.set(pageParamName, '1');
         urlParams.set(orderParamName, isCurrentSort ? (currentOrder === DESC ? ASC : DESC) : ASC);
 
@@ -345,8 +352,7 @@ body.rtl .table > tbody > tr > td:first-child {
             th.classList.add('sorted');
             th.classList.add(currentOrder === DESC ? 'order1' : 'order2');
         }
-        th.innerHTML = '<a href="?' + urlParams.toString() + '" class="sort-link">'
-            + th.innerHTML + '</a>';
+        th.innerHTML = '<a href="?' + urlParams.toString() + '" class="sort-link">' + th.innerHTML + '</a>';
     });
 })();
 </script>
