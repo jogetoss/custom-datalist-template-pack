@@ -100,13 +100,29 @@
 
     show(null);
 
-    // Compute total once by requesting last page and counting its rows
+    // Compute total once by requesting last page and counting its rows.
+    // On first load, current URL may not include the displaytag page param; discover it from pager links.
     var lastPage = null;
     var links = listEl.querySelectorAll(".pagination a[href], a[href]");
     for (var j = 0; j < links.length; j++) {
         try {
             var u = new URL(links[j].getAttribute("href"), window.location.href);
             var n = int(u.searchParams.get(pKey), null);
+            if (!n) {
+                // Try any displaytag-style page param key in the link (e.g. d-12345-p)
+                u.searchParams.forEach(function (v, k) {
+                    if (!n && k && k.slice(-2) === "-p") {
+                        var tmp = int(v, null);
+                        if (tmp) {
+                            pKey = k;
+                            n = tmp;
+                        }
+                    }
+                    if (k && k.slice(-2) === "-s" && !findKey("-s")) {
+                        sKey = k;
+                    }
+                });
+            }
             if (n && (!lastPage || n > lastPage)) lastPage = n;
         } catch (e) {}
     }
