@@ -1,4 +1,5 @@
 <#assign _dl = element.datalist />
+<#assign _hideUnselectedActions = ((element.properties.hideActionsWhenUnselected!'') == 'true') />
 <#assign _sortParam = _dl.getDataListEncodedParamName("s") />
 <#assign _orderParam = _dl.getDataListEncodedParamName("o") />
 <#assign _pageParam = _dl.getDataListEncodedParamName("p") />
@@ -213,6 +214,14 @@ body.rtl .table > tbody > tr > td:first-child {
 .rowActions.d-flex > a:last-child {
     margin-right: 0 !important;
 }
+
+/* Actions disabled until row selection */
+#dataList_{{list.id}} .sapr-action-disabled,
+#dataList_{{list.id}} .actions button.form-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
 </style>
 
 <script>
@@ -224,7 +233,17 @@ body.rtl .table > tbody > tr > td:first-child {
     if (!table) return;
 
     var theadCheckbox = table.querySelector("thead .sapr-select-all-header input[type='checkbox']");
-    var rowCheckboxes = function() { return table.querySelectorAll("tbody tr td:first-child input[type='checkbox']"); };
+    var rowSelectors = function() {
+        return table.querySelectorAll(
+            "tbody tr .select_checkbox input[type='checkbox'], " +
+            "tbody tr .select_radio input[type='radio'], " +
+            "tbody tr td:first-child input[type='checkbox'], " +
+            "tbody tr td:first-child input[type='radio']"
+        );
+    };
+    var rowCheckboxes = rowSelectors;
+    var hasRowSelector = rowSelectors().length > 0;
+    var hideActionsWhenUnselected = ${_hideUnselectedActions?string('true', 'false')};
 
     // Protected Rows: conditions from repeater (element.properties.protectedRowsConditionGrid)
     var conditions = [];
@@ -284,6 +303,103 @@ body.rtl .table > tbody > tr > td:first-child {
         }
     }
 
+    function isSelectorChecked(input) {
+        return !!(input && !input.disabled && input.checked);
+    }
+
+    function hasAnyRowSelected() {
+        var selectors = rowSelectors();
+        for (var i = 0; i < selectors.length; i++) {
+            if (isSelectorChecked(selectors[i])) return true;
+        }
+        return false;
+    }
+
+    function setActionElementState(el, disabled) {
+        if (!el || el.classList.contains("sapr-action-skip")) return;
+
+        if (hideActionsWhenUnselected && disabled) {
+            el.style.display = "none";
+            el.classList.add("sapr-action-hidden");
+            if (el.tagName === "A") {
+                if (!el.hasAttribute("data-sapr-original-href")) {
+                    el.setAttribute("data-sapr-original-href", el.getAttribute("href") || "");
+                    if (el.getAttribute("onclick")) {
+                        el.setAttribute("data-sapr-original-onclick", el.getAttribute("onclick"));
+                    }
+                }
+                el.removeAttribute("href");
+                el.setAttribute("onclick", "return false;");
+            } else if (el.tagName === "BUTTON" || (el.tagName === "INPUT" && (el.type === "submit" || el.type === "button"))) {
+                el.disabled = true;
+            }
+            return;
+        }
+
+        el.style.display = "";
+        el.classList.remove("sapr-action-hidden");
+
+        if (el.tagName === "A") {
+            if (disabled) {
+                if (!el.hasAttribute("data-sapr-original-href")) {
+                    el.setAttribute("data-sapr-original-href", el.getAttribute("href") || "");
+                    if (el.getAttribute("onclick")) {
+                        el.setAttribute("data-sapr-original-onclick", el.getAttribute("onclick"));
+                    }
+                }
+                el.removeAttribute("href");
+                el.setAttribute("onclick", "return false;");
+                el.classList.add("sapr-action-disabled");
+                el.setAttribute("aria-disabled", "true");
+                el.setAttribute("tabindex", "-1");
+            } else {
+                if (el.hasAttribute("data-sapr-original-href")) {
+                    el.setAttribute("href", el.getAttribute("data-sapr-original-href"));
+                }
+                if (el.hasAttribute("data-sapr-original-onclick")) {
+                    el.setAttribute("onclick", el.getAttribute("data-sapr-original-onclick"));
+                } else {
+                    el.removeAttribute("onclick");
+                }
+                el.classList.remove("sapr-action-disabled");
+                el.removeAttribute("aria-disabled");
+                el.removeAttribute("tabindex");
+            }
+            return;
+        }
+
+        if (el.tagName === "BUTTON" || (el.tagName === "INPUT" && (el.type === "submit" || el.type === "button"))) {
+            el.disabled = disabled;
+            el.classList.toggle("sapr-action-disabled", disabled);
+        }
+    }
+
+    function listActionRequiresSelection(btn) {
+        var href = (btn.getAttribute("data-href") || "").trim();
+        var hrefParam = (btn.getAttribute("data-hrefparam") || "").trim();
+        var target = (btn.getAttribute("data-target") || "").trim().toLowerCase();
+        // Match Joget datalist logic: hyperlink actions without hrefParam do not need row selection (e.g. Add New Record).
+        if (href && !hrefParam && target !== "post") {
+            return false;
+        }
+        return true;
+    }
+
+    function syncActionStates() {
+        if (!hasRowSelector) return;
+
+        var anySelected = hasAnyRowSelected();
+        var listButtons = listEl.querySelectorAll("form .actions button.form-button");
+        for (var b = 0; b < listButtons.length; b++) {
+            var btn = listButtons[b];
+            if (!listActionRequiresSelection(btn)) {
+                setActionElementState(btn, false);
+                continue;
+            }
+            setActionElementState(btn, !anySelected);
+        }
+    }
+
     function syncHeaderFromRows() {
         if (!theadCheckbox) return;
         var checkboxes = rowCheckboxes();
@@ -309,16 +425,24 @@ body.rtl .table > tbody > tr > td:first-child {
     if (theadCheckbox) {
         theadCheckbox.addEventListener("change", function() {
             syncRowsFromHeader();
+            syncActionStates();
         });
     }
 
     table.addEventListener("change", function(e) {
-        if (e.target && e.target.type === "checkbox" && e.target.closest("tbody tr td:first-child")) {
+        if (!e.target) return;
+        var isRowSelectorEvent = (
+            (e.target.type === "checkbox" || e.target.type === "radio") &&
+            e.target.closest("tbody tr")
+        );
+        if (isRowSelectorEvent) {
             syncHeaderFromRows();
+            syncActionStates();
         }
     });
 
     syncHeaderFromRows();
+    syncActionStates();
 
     // Empty state row
     var tbody = table.querySelector('tbody');
