@@ -1,4 +1,5 @@
 <#assign _dl = element.datalist />
+<#assign _hideUnselectedActions = ((element.properties.hideActionsWhenUnselected!'') == 'true') />
 <#assign _sortParam = _dl.getDataListEncodedParamName("s") />
 <#assign _orderParam = _dl.getDataListEncodedParamName("o") />
 <#assign _pageParam = _dl.getDataListEncodedParamName("p") />
@@ -242,6 +243,7 @@ body.rtl .table > tbody > tr > td:first-child {
     };
     var rowCheckboxes = rowSelectors;
     var hasRowSelector = rowSelectors().length > 0;
+    var hideActionsWhenUnselected = ${_hideUnselectedActions?string('true', 'false')};
 
     // Protected Rows: conditions from repeater (element.properties.protectedRowsConditionGrid)
     var conditions = [];
@@ -325,6 +327,27 @@ body.rtl .table > tbody > tr > td:first-child {
     function setActionElementState(el, disabled) {
         if (!el || el.classList.contains("sapr-action-skip")) return;
 
+        if (hideActionsWhenUnselected && disabled) {
+            el.style.display = "none";
+            el.classList.add("sapr-action-hidden");
+            if (el.tagName === "A") {
+                if (!el.hasAttribute("data-sapr-original-href")) {
+                    el.setAttribute("data-sapr-original-href", el.getAttribute("href") || "");
+                    if (el.getAttribute("onclick")) {
+                        el.setAttribute("data-sapr-original-onclick", el.getAttribute("onclick"));
+                    }
+                }
+                el.removeAttribute("href");
+                el.setAttribute("onclick", "return false;");
+            } else if (el.tagName === "BUTTON" || (el.tagName === "INPUT" && (el.type === "submit" || el.type === "button"))) {
+                el.disabled = true;
+            }
+            return;
+        }
+
+        el.style.display = "";
+        el.classList.remove("sapr-action-hidden");
+
         if (el.tagName === "A") {
             if (disabled) {
                 if (!el.hasAttribute("data-sapr-original-href")) {
@@ -366,8 +389,7 @@ body.rtl .table > tbody > tr > td:first-child {
         var anySelected = hasAnyRowSelected();
         var listButtons = listEl.querySelectorAll("form .actions button.form-button");
         for (var b = 0; b < listButtons.length; b++) {
-            listButtons[b].disabled = !anySelected;
-            listButtons[b].classList.toggle("sapr-action-disabled", !anySelected);
+            setActionElementState(listButtons[b], !anySelected);
         }
 
         var dataRows = table.querySelectorAll("tbody tr");
