@@ -303,15 +303,6 @@ body.rtl .table > tbody > tr > td:first-child {
         }
     }
 
-    function getRowSelector(row) {
-        return row.querySelector(
-            ".select_checkbox input[type='checkbox'], " +
-            ".select_radio input[type='radio'], " +
-            "td:first-child input[type='checkbox'], " +
-            "td:first-child input[type='radio']"
-        );
-    }
-
     function isSelectorChecked(input) {
         return !!(input && !input.disabled && input.checked);
     }
@@ -383,30 +374,29 @@ body.rtl .table > tbody > tr > td:first-child {
         }
     }
 
+    function listActionRequiresSelection(btn) {
+        var href = (btn.getAttribute("data-href") || "").trim();
+        var hrefParam = (btn.getAttribute("data-hrefparam") || "").trim();
+        var target = (btn.getAttribute("data-target") || "").trim().toLowerCase();
+        // Match Joget datalist logic: hyperlink actions without hrefParam do not need row selection (e.g. Add New Record).
+        if (href && !hrefParam && target !== "post") {
+            return false;
+        }
+        return true;
+    }
+
     function syncActionStates() {
         if (!hasRowSelector) return;
 
         var anySelected = hasAnyRowSelected();
         var listButtons = listEl.querySelectorAll("form .actions button.form-button");
         for (var b = 0; b < listButtons.length; b++) {
-            setActionElementState(listButtons[b], !anySelected);
-        }
-
-        var dataRows = table.querySelectorAll("tbody tr");
-        for (var r = 0; r < dataRows.length; r++) {
-            var row = dataRows[r];
-            if (row.classList.contains("empty") || row.classList.contains("expandable-content-row")) continue;
-
-            var rowSelected = isSelectorChecked(getRowSelector(row));
-            var rowActionEls = row.querySelectorAll(
-                ".sapr-actions-column .rowActions a, " +
-                ".sapr-actions-column .rowActions button, " +
-                ".sapr-actions-column .rowActions input[type='submit'], " +
-                ".sapr-actions-column .rowActions input[type='button']"
-            );
-            for (var a = 0; a < rowActionEls.length; a++) {
-                setActionElementState(rowActionEls[a], !rowSelected);
+            var btn = listButtons[b];
+            if (!listActionRequiresSelection(btn)) {
+                setActionElementState(btn, false);
+                continue;
             }
+            setActionElementState(btn, !anySelected);
         }
     }
 
