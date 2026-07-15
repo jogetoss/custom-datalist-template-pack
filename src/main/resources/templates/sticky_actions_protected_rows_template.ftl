@@ -54,106 +54,28 @@
     </div>
 </div>
 
-<div id="datalistInfo_{{list.id}}" class="datalist-result-info" style="text-align:right; padding: 2px 0 6px; font-size: 12px; color: #6c757d;"></div>
-
-<script>
-(function () {
-    var listEl = document.getElementById("dataList_{{list.id}}");
-    var infoEl = document.getElementById("datalistInfo_{{list.id}}");
-    if (!listEl || !infoEl) return;
-
-    var url = new URL(window.location.href);
-    var sp = url.searchParams;
-
-    var table = listEl.querySelector(".table");
-    var rows = table ? table.querySelectorAll("tbody tr") : [];
-    var rowsOnPage = 0;
-    for (var i = 0; i < rows.length; i++) {
-        if (rows[i].classList && rows[i].classList.contains("expandable-content-row")) continue;
-        rowsOnPage++;
-    }
-    if (!rowsOnPage) return;
-
-    function int(v, d) { v = parseInt(v, 10); return isNaN(v) ? d : v; }
-    function findKey(suffix) {
-        var k = null;
-        sp.forEach(function (_v, key) { if (key && key.slice(-suffix.length) === suffix) k = key; });
-        return k;
-    }
-    var pKey = findKey("-p") || "page";
-    var sKey = findKey("-s") || "pageSize";
-    var page = int(sp.get(pKey) || sp.get("p"), 1);
-    var pageSize = int(sp.get(sKey) || sp.get("rows"), rowsOnPage);
-
-    var start = ((page - 1) * pageSize) + 1;
-    var end = start + rowsOnPage - 1;
-
-    function show(total) {
-        infoEl.textContent = total
-            ? (total + " items found, displaying " + start + " to " + Math.min(end, total) + ".")
-            : ("Displaying " + start + " to " + end + ".");
-    }
-
-    var cacheKey = "joget:datalistTotal:{{list.id}}:" + window.location.pathname;
-    var cached = null;
-    try { cached = int(sessionStorage.getItem(cacheKey), null); } catch (e) {}
-    if (cached) return show(cached);
-
-    show(null);
-
-    // Compute total once by requesting last page and counting its rows.
-    // On first load, current URL may not include the displaytag page param; discover it from pager links.
-    var lastPage = null;
-    var links = listEl.querySelectorAll(".pagination a[href], a[href]");
-    for (var j = 0; j < links.length; j++) {
-        try {
-            var u = new URL(links[j].getAttribute("href"), window.location.href);
-            var n = int(u.searchParams.get(pKey), null);
-            if (!n) {
-                // Try any displaytag-style page param key in the link (e.g. d-12345-p)
-                u.searchParams.forEach(function (v, k) {
-                    if (!n && k && k.slice(-2) === "-p") {
-                        var tmp = int(v, null);
-                        if (tmp) {
-                            pKey = k;
-                            n = tmp;
-                        }
-                    }
-                    if (k && k.slice(-2) === "-s" && !findKey("-s")) {
-                        sKey = k;
-                    }
-                });
-            }
-            if (n && (!lastPage || n > lastPage)) lastPage = n;
-        } catch (e) {}
-    }
-    if (!lastPage || lastPage <= 1) return;
-
-    var lastUrl = new URL(window.location.href);
-    lastUrl.searchParams.set(pKey, String(lastPage));
-    if (findKey("-s")) lastUrl.searchParams.set(sKey, String(pageSize));
-
-    fetch(lastUrl.toString(), { credentials: "same-origin" })
-        .then(function (r) { return r.text(); })
-        .then(function (html) {
-            var doc = new DOMParser().parseFromString(html, "text/html");
-            var remote = doc.getElementById("dataList_{{list.id}}");
-            var rt = remote ? remote.querySelector(".table") : null;
-            if (!rt) return;
-            var trs = rt.querySelectorAll("tbody tr");
-            var lastRows = 0;
-            for (var x = 0; x < trs.length; x++) {
-                if (trs[x].classList && trs[x].classList.contains("expandable-content-row")) continue;
-                lastRows++;
-            }
-            if (!lastRows) return;
-            var total = ((lastPage - 1) * pageSize) + lastRows;
-            try { sessionStorage.setItem(cacheKey, String(total)); } catch (e) {}
-            show(total);
-        })
-        .catch(function () {});
-})();
-</script>
+<#--
+    Result info line, rendered entirely server-side.
+    The DataList already knows the filtered total (getSize()), the page size,
+    and the current page, so there is no need to reverse-engineer these values
+    on the client by fetching the last page. This is accurate under filtering /
+    search and requires no extra HTTP request.
+-->
+<#assign _total = _dl.getSize() />
+<#assign _pageSize = _dl.getPageSize() />
+<#assign _pageStr = (_dl.getDataListParamString("p"))!"" />
+<#assign _page = (_pageStr?trim?matches(r"^[0-9]+$"))?then(_pageStr?number?int, 1) />
+<#if _page lt 1><#assign _page = 1 /></#if>
+<#if (_pageSize gt 0)>
+    <#assign _start = ((_page - 1) * _pageSize) + 1 />
+    <#assign _end = _page * _pageSize />
+    <#if (_end gt _total)><#assign _end = _total /></#if>
+<#else>
+    <#assign _start = (_total gt 0)?then(1, 0) />
+    <#assign _end = _total />
+</#if>
+<#if (_start gt _total)><#assign _start = _total /></#if>
+<div id="datalistInfo_{{list.id}}" class="datalist-result-info" style="text-align:right; padding: 2px 0 6px; font-size: 12px; color: #6c757d;"><#if (_total gt 0)>${_total?c} items found, displaying ${_start?c} to ${_end?c}.<#else>No items found.</#if></div>
 
 <style>
 /* Sticky Actions column - stays visible when scrolling horizontally */
@@ -461,12 +383,21 @@ body.rtl .table > tbody > tr > td:first-child {
     var sortParamName = '${_sortParam?js_string}';
     var orderParamName = '${_orderParam?js_string}';
     var pageParamName = '${_pageParam?js_string}';
-    var currentSortIdx = parseInt('${_curSort?js_string}') || 0;
+    var curSortRaw = '${_curSort?js_string}';
+    var currentSortIdx = curSortRaw !== '' ? parseInt(curSortRaw, 10) : null;
     var currentOrder = '${_curOrder?js_string}';
     var ASC = '2', DESC = '1';
     var sortableIds = [<#list _sortableIds as _id>'${_id?js_string}'<#sep>, </#list>];
 
-    // Build a 1-based sort index map using only actual datalist column headers (ignore selector/actions columns)
+    // Sort-index base must match DataList.getDataListParam(): the backend subtracts 1
+    // from the sort param only when the checkbox column is on the LEFT or BOTH sides,
+    // then indexes into the (selector-less) data column array. So the value we emit is
+    // 1-based when the selector is left/both, and 0-based otherwise (selector off or right).
+    <#assign _cbPos = (_dl.getCheckboxPosition())!"left" />
+    <#assign _sortBase = (_cbPos == "left" || _cbPos == "both")?then(1, 0) />
+    var sortBase = ${_sortBase?c};
+
+    // Build the sort index map using only actual datalist column headers (ignore selector/actions columns)
     var headerCells = Array.prototype.slice.call(listEl.querySelectorAll('thead tr:first-child th'));
     var columnHeaders = headerCells
         .map(function(th) {
@@ -479,8 +410,8 @@ body.rtl .table > tbody > tr > td:first-child {
         if (sortableIds.indexOf(item.id) === -1) return;
 
         var th = item.th;
-        var sortIdx = idx + 1; // 1-based index among DataList columns only
-        var isCurrentSort = (currentSortIdx === sortIdx);
+        var sortIdx = idx + sortBase; // base depends on checkbox position (see above)
+        var isCurrentSort = (currentSortIdx !== null && currentSortIdx === sortIdx);
 
         var urlParams = new URLSearchParams(window.location.search);
         urlParams.set(sortParamName, String(sortIdx));
