@@ -3,6 +3,7 @@
 <#assign _sortParam = _dl.getDataListEncodedParamName("s") />
 <#assign _orderParam = _dl.getDataListEncodedParamName("o") />
 <#assign _pageParam = _dl.getDataListEncodedParamName("p") />
+<#assign _pageSizeParam = _dl.getDataListEncodedParamName("ps") />
 <#assign _curSort = (_dl.getDataListParamString("s"))!"" />
 <#assign _curOrder = (_dl.getDataListParamString("o"))!"" />
 <#assign _sortableIds = element.sortableColumnIds />
@@ -54,28 +55,48 @@
     </div>
 </div>
 
-<#--
-    Result info line, rendered entirely server-side.
-    The DataList already knows the filtered total (getSize()), the page size,
-    and the current page, so there is no need to reverse-engineer these values
-    on the client by fetching the last page. This is accurate under filtering /
-    search and requires no extra HTTP request.
--->
-<#assign _total = _dl.getSize() />
-<#assign _pageSize = _dl.getPageSize() />
-<#assign _pageStr = (_dl.getDataListParamString("p"))!"" />
-<#assign _page = (_pageStr?trim?matches(r"^[0-9]+$"))?then(_pageStr?number?int, 1) />
-<#if _page lt 1><#assign _page = 1 /></#if>
-<#if (_pageSize gt 0)>
-    <#assign _start = ((_page - 1) * _pageSize) + 1 />
-    <#assign _end = _page * _pageSize />
-    <#if (_end gt _total)><#assign _end = _total /></#if>
+<#assign _cachedSize = (element.cachedSize)!-1 />
+<#if (_cachedSize gte 0)>
+    <#assign _pageSize = _dl.getPageSize() />
+    <#assign _pageStr = (_dl.getDataListParamString("p"))!"" />
+    <#assign _page = (_pageStr?trim?matches(r"^[0-9]+$"))?then(_pageStr?number?int, 1) />
+    <#if _page lt 1><#assign _page = 1 /></#if>
+    <#if (_pageSize gt 0)>
+        <#assign _start = ((_page - 1) * _pageSize) + 1 />
+        <#assign _end = _page * _pageSize />
+        <#if (_end gt _cachedSize)><#assign _end = _cachedSize /></#if>
+    <#else>
+        <#assign _start = (_cachedSize gt 0)?then(1, 0) />
+        <#assign _end = _cachedSize />
+    </#if>
+    <#if (_start gt _cachedSize)><#assign _start = _cachedSize /></#if>
+    <div id="datalistInfo_{{list.id}}" class="datalist-result-info" style="text-align:right; padding: 2px 0 6px; font-size: 12px; color: #6c757d;"><#if (_cachedSize gt 0)>${_cachedSize} items found, displaying ${_start} to ${_end}.<#else>No items found.</#if></div>
 <#else>
-    <#assign _start = (_total gt 0)?then(1, 0) />
-    <#assign _end = _total />
+    <div id="datalistInfo_{{list.id}}" class="datalist-result-info" style="text-align:right; padding: 2px 0 6px; font-size: 12px; color: #6c757d;"></div>
+    <script>
+    (function() {
+        var infoEl = document.getElementById("datalistInfo_{{list.id}}");
+        var listEl = document.getElementById("dataList_{{list.id}}");
+        if (!infoEl || !listEl) return;
+
+        var table = listEl.querySelector(".table");
+        var rows = table ? table.querySelectorAll("tbody tr.data-row") : [];
+        var n = rows.length;
+        if (!n) { infoEl.textContent = "No items found."; return; }
+
+        var pageParamName = '${_pageParam?js_string}';
+        var pageSizeParamName = '${_pageSizeParam?js_string}';
+        var url = new URL(window.location.href);
+        var sp = url.searchParams;
+        function int(v, d) { v = parseInt(v, 10); return isNaN(v) ? d : v; }
+        var page = int(sp.get(pageParamName), 1);
+        var pageSize = int(sp.get(pageSizeParamName), n);
+        var start = ((page - 1) * pageSize) + 1;
+        var end = start + n - 1;
+        infoEl.textContent = "Displaying " + start + " to " + end + ".";
+    })();
+    </script>
 </#if>
-<#if (_start gt _total)><#assign _start = _total /></#if>
-<div id="datalistInfo_{{list.id}}" class="datalist-result-info" style="text-align:right; padding: 2px 0 6px; font-size: 12px; color: #6c757d;"><#if (_total gt 0)>${_total?c} items found, displaying ${_start?c} to ${_end?c}.<#else>No items found.</#if></div>
 
 <style>
 /* Sticky Actions column - stays visible when scrolling horizontally */
