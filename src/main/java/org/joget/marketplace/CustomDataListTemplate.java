@@ -53,7 +53,7 @@ public class CustomDataListTemplate extends DataListTemplate {
 
     @Override
     public String getVersion() {
-        return "9.0.4";
+        return "9.0.5";
     }
 
     @Override
